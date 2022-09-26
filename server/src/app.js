@@ -3,18 +3,23 @@ require("express-async-handler")
 const path = require("path")
 const express = require("express")
 const cors = require("cors")
+const cookieParser = require("cookie-parser")
 
 const { errorHandler, notFound } = require("./middlewares/errors")
+const api = require("./routes/api")
+const { logger } = require('./middlewares/logger')
+const corsOptions = require("./config/corsOptions")
 
 const app = express()
 
-app.use(cors({
-    origin: "http://localhost:3000",
-    credentials: true
-}))
+app.use(logger)
+
+app.use(cors(corsOptions))
 
 app.use(express.json())
-app.use(express.urlencoded({extended: false}))
+app.use(express.urlencoded({ extended: false }))
+
+app.use(cookieParser())
 
 if(process.env.NODE_ENV === "production") {
     app.use(express.static(path.join(__dirname, "..", "public")))
@@ -28,7 +33,7 @@ if(process.env.NODE_ENV === "production") {
     })
 }
 
-
+app.use("/api/v1", api)
 
 app.use(notFound)
 app.use(errorHandler)
